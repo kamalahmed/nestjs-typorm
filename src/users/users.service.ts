@@ -22,6 +22,9 @@ export class UsersService {
   async findOne(id: number): Promise<User | null> {
     return await this.usersRepository.findOneBy({ id });
   }
+  async findOneByEmail(email: string): Promise<User | null> {
+    return await this.usersRepository.findOneBy({ email });
+  }
 
   async remove(id: number): Promise<void> {
     const user = await this.findOne(id);

@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,7 +18,7 @@ import * as bcrypt from 'bcrypt';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
+  @Post('register')
   async create(@Body() createUserDto: CreateUserDto) {
     const { password } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -25,6 +27,26 @@ export class UsersController {
       ...createUserDto,
       password: hashedPassword,
     });
+  }
+
+  @Post('login')
+  async login(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ) {
+    const user = await this.usersService.findOneByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return user;
   }
 
   @Get()
@@ -38,7 +60,11 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    if (updateUserDto.password) {
+      const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
+      updateUserDto.password = hashedPassword;
+    }
     return this.usersService.update(+id, updateUserDto);
   }
 
