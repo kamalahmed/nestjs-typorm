@@ -29,26 +29,6 @@ export class UsersController {
     });
   }
 
-  @Post('login')
-  async login(
-    @Body('email') email: string,
-    @Body('password') password: string,
-  ) {
-    const user = await this.usersService.findOneByEmail(email);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    return user;
-  }
-
   @Get()
   findAll() {
     return this.usersService.findAll();
