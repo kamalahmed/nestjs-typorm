@@ -6,10 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from '../auth/auth.guard';
 import * as bcrypt from 'bcrypt';
 
 @Controller('users')
@@ -25,6 +28,11 @@ export class UsersController {
       ...createUserDto,
       password: hashedPassword,
     });
+  }
+  @UseGuards(AuthGuard)
+  @Get('profile') // this route should be above placeholder route or dynamic route.
+  getProfile(@Request() req) {
+    return req.user;
   }
 
   @Get()
