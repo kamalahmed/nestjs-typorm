@@ -19,16 +19,6 @@ import * as bcrypt from 'bcrypt';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('register')
-  async create(@Body() createUserDto: CreateUserDto) {
-    const { password } = createUserDto;
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    return this.usersService.create({
-      ...createUserDto,
-      password: hashedPassword,
-    });
-  }
   @UseGuards(AuthGuard)
   @Get('profile') // this route should be above placeholder route or dynamic route.
   getProfile(@Request() req) {
