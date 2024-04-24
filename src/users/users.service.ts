@@ -16,11 +16,25 @@ export class UsersService {
     return await this.usersRepository.save(user);
   }
   async findAll(): Promise<User[]> {
-    return await this.usersRepository.find();
+    return await this.usersRepository.find({
+      select: ['id', 'name', 'email', 'isAdmin'], // Fields to include, excluding 'password'
+    });
   }
 
-  async findOne(id: any): Promise<User | null> {
-    return await this.usersRepository.findOneBy({ id });
+  async findOne(id: number): Promise<User | null> {
+    // Most flexible way to retrieve selected data but maybe expensive.
+    // return await this.usersRepository
+    //   .createQueryBuilder('user')
+    //   .select(['user.id', 'user.name', 'user.email']) // Exclude 'password' by not listing it
+    //   .where('user.id = :id', { id })
+    //   .getOne();
+
+    // Removing password field is faster in the following way.
+    const user = await this.usersRepository.findOneBy({ id });
+    if (user) {
+      delete user.password; // Remove the password field from the object
+    }
+    return user;
   }
   async findOneByEmail(email: string): Promise<User | null> {
     return await this.usersRepository.findOneBy({ email });
